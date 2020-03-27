@@ -113,11 +113,11 @@ class Model:
         if (len(j_nu_min_min) == 3):
             print("Impossible to compute the spectra")
             print(min_min + " does not have enough data\n")
-            return None, None
+            return np.zeros(1), np.zeros(1)
         elif (len(j_nu_min_max) == 3):
             print("Impossible to compute the spectra")
             print(min_max + " does not have enough data\n")
-            return None, None
+            return np.zeros(1), np.zeros(1)
         else:
             print(j_nu_min_min[:,2])
 
@@ -129,21 +129,23 @@ class Model:
     def bolometric(self):
         lambdas,spectrum = self.spectrum()
         # Checking if no Data
-        if lambdas==None:
+        if len(lambdas)== 1:
             print("Impossible to compute bolometric luminosity")
             print("There is no spectral data for this model")
             return None
         return np.trapz(spectrum,lambdas)
     def plot_spec(self):
         lambdas,spectrum = self.spectrum()
-        if type(lambdas)==NoneType:
+        if len(lambdas)== 1:
             print("Impossible to plot the spectrum")
             print("There is no spectral data for this model")
             return None
-        plt.loglog(lambdas,spectrum)
+        plt.semilogx(lambdas,spectrum) # this looks like an emission spectrum
+        # plt.loglog do not, neither plt.semilogy
         plt.title(self.key_min_max[:-4])
         plt.xlabel('$nm$')
-        plt.ylabel('$L_{\lambda}$ $[W/nm/(kg of H)]$')
+        plt.ylabel('$L_{\lambda}$' +' [W/nm/(kg of H)]')
+        plt.savefig(self.key_min_max[:-4]+'.pdf')
         plt.show()
 m = Model(umin= '0.20', umax='1e3', model='MW3.1_60',gamma = 0.3,data = d)
 #a,b,c,d = m.raw_model()
