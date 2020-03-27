@@ -36,20 +36,44 @@ class Data:
     def arr_dat(self,file):
         # This method generates a Numpy array for one txt file of data
         f = open(file,'r')
+        vals = []
         # Flag variable
         i = 0
         for line in f:
-            if ('(um)' in line):
+            if ('lambda' in line):
                 i = 1
             elif i == 1:
+                i = 2
+            elif i == 2:
                 val = line.split()
                 vals.append(val)
         f.close()
+        if i == 0:
+            return 'File with no data'
         data = np.array(vals)
+        #print(file)
+        #print(data)
         data.astype(float)
         return data
-    def dict_dat(self):
-        all_data = {}
+    def dic_files(self):
+        # This method returns a dictionary where the key is the directory path
+        # and the values are lists with the files in the corresponding directory.
+        dirpath, dirnames,files = self.txt_files()
+        all_txts = {dirpath[i]:files[i] for i in range(len(dirpath))}
+        return all_txts
+    def dic_arr(self):
+        dic_arr = {}
+        # This method returns a dictioanry containing all the data, arranged
+        #similarly as in dic_files
+        all_txts = self.dic_files()
+        for key,values in all_txts.items():
+            for val in values:
+                arr = self.arr_dat(key + '/' + val)
+                dic_arr[key+val] = arr
+        return dic_arr
+
+d = Data()
+dic_arr = d.dic_arr()
 
 # Class to create a model
 class Model:
