@@ -33,7 +33,7 @@ class Data:
         dirnames = dirnames[0]
         files.remove([])
         return dirpath, dirnames,files
-    def dat_arr(self,file):
+    def arr_dat(self,file):
         # This method generates a Numpy array for one txt file of data
         f = open(file,'r')
         # Flag variable
@@ -48,6 +48,8 @@ class Data:
         data = np.array(vals)
         data.astype(float)
         return data
+    def dict_dat(self):
+        all_data = {}
 
 # Class to create a model
 class Model:
