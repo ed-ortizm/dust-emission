@@ -75,15 +75,7 @@ class Data:
                 dic_arr[val] = arr
         return dic_arr
 
-d = Data()
-dic_arr = d.dic_arr()
-for x in dic_arr:
-    print(x)
-    break
-
-# There are 1542 files
-#print(len(dic_arr))
-# Class to create a model
+# Class to create an emission spectrum
 class Model:
     def __init__(self, umin, umax, model,gamma,data, model_q_dic = model_q_dic):
         self.umin = umin
@@ -119,8 +111,6 @@ class Model:
             print(min_max + " does not have enough data\n")
             return np.zeros(1), np.zeros(1)
         else:
-            print(j_nu_min_min[:,2])
-
             j_nu = (1.-self.gamma)*j_nu_min_min[:,2] + self.gamma*j_nu_min_max[:,2]
             lambdas = j_nu_min_max[:,0] * 1000. # it is in microns, then with this I convert them to nm
             spectrum = j_nu * (0.001/1.66)*4*np.pi*3e7
@@ -147,9 +137,3 @@ class Model:
         plt.ylabel('$L_{\lambda}$' +' [W/nm/(kg of H)]')
         plt.savefig(self.key_min_max[:-4]+'.pdf')
         plt.show()
-m = Model(umin= '0.20', umax='1e3', model='MW3.1_60',gamma = 0.3,data = d)
-#a,b,c,d = m.raw_model()
-#print(a,b,c,d)
-#l,s = m.spectrum()
-#bolometric = m.bolometric()
-m.plot_spec()
