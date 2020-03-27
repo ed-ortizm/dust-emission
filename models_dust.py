@@ -100,7 +100,15 @@ class Model:
         self.data = data
     # Returning the raw data needed to compute the model
     def raw_model(self):
-        return self.key_min_min self.data.dic_arr[self.key_min_min] self.key_min_max self.data.dic_arr[self.key_min_max]
+        return self.key_min_min, self.data.dic_arr[self.key_min_min], self.key_min_max, self.data.dic_arr[self.key_min_max]
+    # Returning wavelength in nm
+    def wavelength(self):
+        pass
     # Computing the model (first 4 parameters of the constructor)
     def model(self):
-        pass
+        min_min, j_nu_min_min, min_max, j_nu_min_max = self.raw_model()
+        j_nu = (1.-gamma)*j_nu_min_min[:,2] + gamma*j_nu_min_max[:,2]
+        lambdas = j_nu_min_max[:,0] * 1000. # it is in microns, then with this I convert them to nm
+        spectrum = j_nu * (0.001/1.66)*4*np.pi*3e7
+        spectrum = spectrum/(lambdas*lambdas) # conversion factors for units in W/nm/(Kg of H)
+        return lambdas,spectrum
