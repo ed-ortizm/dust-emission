@@ -34,22 +34,24 @@ class Data:
         files.remove([])
         return dirpath, dirnames,files
     def dat_arr(self,file):
-        # generates a Numpy array for one txt file
+        # This method generates a Numpy array for one txt file of data
+        f = open(file,'r')
         # Flag variable
         i = 0
-        for line in file:
+        for line in f:
             if ('(um)' in line):
                 i = 1
             elif i == 1:
                 val = line.split()
                 vals.append(val)
+        f.close()
         data = np.array(vals)
         data.astype(float)
         return data
 
 # Class to create a model
 class Model:
-    def __init__(self, umin, umax, model):
+    def __init__(self, umin, umax, model, gamma):
         self.umin = umin
         self.umax = umax
         self.model = model
