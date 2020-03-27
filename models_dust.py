@@ -83,7 +83,7 @@ for x in dic_arr:
 #print(len(dic_arr))
 # Class to create a model
 class Model:
-    def __init__(self, umin, umax, model,gamma,data=data, model_q_dic = model_q_dic,path='dust_models/'):
+    def __init__(self, umin, umax, model,gamma,data, model_q_dic = model_q_dic):
         self.umin = umin
         self.umax = umax
         self.model = model
@@ -95,20 +95,36 @@ class Model:
         #self.file = path + 'U' + umin + '/' + 'U' + umin + '_' + umax + '_' + model + '.txt'
         # For doing computations with gamma
         # --> j_nu = (1-gamma)*j_nu[umin,umin] + gamma*j_nu[umin,umax]
+        self.key_min_min = 'U' + umin + '_' + umin + '_' + model + '.txt'
         self.key_min_max = 'U' + umin + '_' + umax + '_' + model + '.txt'
-        self.key_min_min = 'U' + umin + '_' + umax + '_' + model + '.txt'
-        self.data = data
+        self.data = data # this is the data loaded in memory by the last class
     # Returning the raw data needed to compute the model
     def raw_model(self):
-        return self.key_min_min, self.data.dic_arr[self.key_min_min], self.key_min_max, self.data.dic_arr[self.key_min_max]
+        return self.key_min_min, self.data.dic_arr()[self.key_min_min], self.key_min_max, self.data.dic_arr()[self.key_min_max]
     # Returning wavelength in nm
     def wavelength(self):
         pass
     # Computing the model (first 4 parameters of the constructor)
-    def model(self):
+    def spectrum(self):
         min_min, j_nu_min_min, min_max, j_nu_min_max = self.raw_model()
-        j_nu = (1.-gamma)*j_nu_min_min[:,2] + gamma*j_nu_min_max[:,2]
-        lambdas = j_nu_min_max[:,0] * 1000. # it is in microns, then with this I convert them to nm
-        spectrum = j_nu * (0.001/1.66)*4*np.pi*3e7
-        spectrum = spectrum/(lambdas*lambdas) # conversion factors for units in W/nm/(Kg of H)
-        return lambdas,spectrum
+        # to be careful about empty txt files
+        if (len(j_nu_min_min) == 3):
+            print("Impossible to compute the spectra")
+            print(min_min + " does not have enough data\n")
+            return None, None
+        elif (len(j_nu_min_max) == 3):
+            print("Impossible to compute the spectra")
+            print(min_max + " does not have enough data\n")
+            return None, None
+        else:
+            j_nu = (1.-gamma)*j_nu_min_min[:,2] + gamma*j_nu_min_max[:,2]
+            lambdas = j_nu_min_max[:,0] * 1000. # it is in microns, then with this I convert them to nm
+            spectrum = j_nu * (0.001/1.66)*4*np.pi*3e7
+            spectrum = spectrum/(lambdas*lambdas) # conversion factors for units in W/nm/(Kg of H)
+            return lambdas,spectrum
+    def bolometric(self):
+        pass
+m = Model(umin= '0.20', umax='1e2', model='MW3.1_10',gamma = 0.3,data = d)
+#a,b,c,d = m.raw_model()
+#print(a,b,c,d)
+l,s = m.spectrum()
