@@ -15,7 +15,7 @@ umaxs= [1e2,1e3, 1e4, 1e5, 1e6, 1e7]# I added 1e2
 # Class to read the directory structure with the data
 
 class Data:
-    def __inin__(self, path='dust_models'):
+    def __init__(self, path='dust_models'):
         self.path = path
     def txt_files(self):
         # This list store the outputs from walk
@@ -23,7 +23,8 @@ class Data:
         # dirpath contains the paths to all the folders that have txt filenames
         # dirnames is a list with only the name of the folders containing the txt filenames
         # files is a list with the names of all the files
-        for (a,b,c) in walk('dust_models/'):
+        # The map is one to one among each element of these lists, ie, element 1 refer to the same Uumin
+        for (a,b,c) in walk(self.path):
             dirpath.append(a)
             dirnames.append(b)
             files.append(c)
@@ -31,8 +32,20 @@ class Data:
         dirpath = dirpath[1:]
         dirnames = dirnames[0]
         files.remove([])
-
-
+        return dirpath, dirnames,files
+    def dat_arr(self,file):
+        # generates a Numpy array for one txt file
+        # Flag variable
+        i = 0
+        for line in file:
+            if ('(um)' in line):
+                i = 1
+            elif i == 1:
+                val = line.split()
+                vals.append(val)
+        data = np.array(vals)
+        data.astype(float)
+        return data
 
 # Class to create a model
 class Model:
