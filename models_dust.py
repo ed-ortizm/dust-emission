@@ -1,6 +1,8 @@
 import numpy as np
 #https://stackoverflow.com/questions/3207219/how-do-i-list-all-files-of-a-directory
 from os import walk # --> dirpath, dirnames, filenames
+import matplotlib
+import matplotlib.pyplot as plt
 #1. It needs to load all the models and keep them in memory
     # This means I'll need to have an array with the parameters that identify
     # a model.
@@ -54,7 +56,7 @@ class Data:
         data = np.array(vals)
         #print(file)
         #print(data)
-        data.astype(float)
+        data = data.astype(float)
         return data
     def dic_files(self):
         # This method returns a dictionary where the key is the directory path
@@ -117,7 +119,9 @@ class Model:
             print(min_max + " does not have enough data\n")
             return None, None
         else:
-            j_nu = (1.-gamma)*j_nu_min_min[:,2] + gamma*j_nu_min_max[:,2]
+            print(j_nu_min_min[:,2])
+
+            j_nu = (1.-self.gamma)*j_nu_min_min[:,2] + self.gamma*j_nu_min_max[:,2]
             lambdas = j_nu_min_max[:,0] * 1000. # it is in microns, then with this I convert them to nm
             spectrum = j_nu * (0.001/1.66)*4*np.pi*3e7
             spectrum = spectrum/(lambdas*lambdas) # conversion factors for units in W/nm/(Kg of H)
@@ -130,8 +134,20 @@ class Model:
             print("There is no spectral data for this model")
             return None
         return np.trapz(spectrum,lambdas)
-m = Model(umin= '0.20', umax='1e2', model='MW3.1_10',gamma = 0.3,data = d)
+    def plot_spec(self):
+        lambdas,spectrum = self.spectrum()
+        if type(lambdas)==NoneType:
+            print("Impossible to plot the spectrum")
+            print("There is no spectral data for this model")
+            return None
+        plt.loglog(lambdas,spectrum)
+        plt.title(self.key_min_max[:-4])
+        plt.xlabel('$nm$')
+        plt.ylabel('$L_{\lambda}$ $[W/nm/(kg of H)]$')
+        plt.show()
+m = Model(umin= '0.20', umax='1e3', model='MW3.1_60',gamma = 0.3,data = d)
 #a,b,c,d = m.raw_model()
 #print(a,b,c,d)
 #l,s = m.spectrum()
-bolometric = m.bolometric()
+#bolometric = m.bolometric()
+m.plot_spec()
