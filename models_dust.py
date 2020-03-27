@@ -123,8 +123,15 @@ class Model:
             spectrum = spectrum/(lambdas*lambdas) # conversion factors for units in W/nm/(Kg of H)
             return lambdas,spectrum
     def bolometric(self):
-        pass
+        lambdas,spectrum = self.spectrum()
+        # Checking if no Data
+        if lambdas==None:
+            print("Impossible to compute bolometric luminosity")
+            print("There is no spectral data for this model")
+            return None
+        return np.trapz(spectrum,lambdas)
 m = Model(umin= '0.20', umax='1e2', model='MW3.1_10',gamma = 0.3,data = d)
 #a,b,c,d = m.raw_model()
 #print(a,b,c,d)
-l,s = m.spectrum()
+#l,s = m.spectrum()
+bolometric = m.bolometric()
