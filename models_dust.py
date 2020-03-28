@@ -163,6 +163,11 @@ class Model:
             lambdas = j_nu_min_max[:,0] * 1000. # it is in microns, then with this I convert them to nm
             spectrum = j_nu * (0.001/1.66)*4*np.pi*3e7
             spectrum = spectrum/(lambdas*lambdas) # conversion factors for units in W/nm/(Kg of H)
+            # This lines of code are to order the data for lambdas in increasing order
+            # Otherwise, I found the bolometric integral to be negative
+            idx              = np.argsort(lambdas)
+            lambdas          = lambdas[idx]
+            spectrum         = spectrum[idx]
             return lambdas,spectrum
     def interpolate(self,interval):
         lambdas,spectrum = self.spectrum()
@@ -183,6 +188,8 @@ class Model:
         plt.show()
     def bolometric(self):
         lambdas,spectrum = self.spectrum()
+        np.savetxt('spectrum', spectrum)
+        np.savetxt('lambdas', lambdas)
         # Checking if no Data
         if len(lambdas)== 1:
             print("Impossible to compute bolometric luminosity")
