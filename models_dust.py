@@ -188,8 +188,6 @@ class Model:
         plt.show()
     def bolometric(self):
         lambdas,spectrum = self.spectrum()
-        np.savetxt('spectrum', spectrum)
-        np.savetxt('lambdas', lambdas)
         # Checking if no Data
         if len(lambdas)== 1:
             print("Impossible to compute bolometric luminosity")
