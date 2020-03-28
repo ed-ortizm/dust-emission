@@ -78,6 +78,7 @@ class Data:
 # Filter handled from last graded pratical, slightly modified for this practical
 class Filter_handler():
     def __init__(self,filter):
+        self.name = filter
         self.filter = np.loadtxt(filter)
     def lamb_f(self):
         #converting filter wavelength to nm
@@ -87,11 +88,12 @@ class Filter_handler():
     def energy(self):
         # Checking if the filter is defined in photons or energy
         flag = False
-        f = open(filter,'r')
+        f = open(self.name,'r')
         for line in f:
             if '# photon' in line:
                 flag = True
                 break
+        f.close()
         if flag:
             # Converting photons to energy
             photons = self.filter[:,1]
@@ -186,8 +188,8 @@ class Model:
         spectrum_model = self.interpolate(lambdas)
         TxL = filter_energy * spectrum_model
         lambda2 = 1./np.trapz(filter_energy/(lambdas*lambdas))
-
         density_w = np.trapz(TxL,lambdas)
         density_f = lambda2*density_w/(3e17)
-
-        return density_w, density_f
+        np.savetxt('filter.dat', filter_energy, delimiter= "\t")
+        np.savetxt('emission.dat', spectrum_model)
+        return density_w, density_f,
