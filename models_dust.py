@@ -83,6 +83,10 @@ class Filter_handler():
     def lamb_f(self):
         #converting filter wavelength to nm
         lambdas = self.filter[:,0] * 0.1
+        # Lines added to make sure interpolate fills with zeros out of the range
+        aux1 = np.linspace(lambdas.min() -100,lambdas.min() - 1., 10)
+        aux2 = np.linspace(lambdas.max() + 1.,lambdas.max() + 100, 10)
+        lambdas = np.concatenate((aux1,lambdas,aux2))
         return lambdas
     # phtons to energy and normalizing the integral of the filter.
     def energy(self):
@@ -97,12 +101,18 @@ class Filter_handler():
         if flag:
             # Converting photons to energy
             photons = self.filter[:,1]
+            # Lines added to make sure interpolate fills with zeros out of the range
+            aux = np.zeros(10)
+            photons = np.concatenate((aux,photons,aux))
             energies = self.lamb_f() * photons
             norm = np.trapz(energies,self.lamb_f())
             n_energies = energies/norm
             return n_energies
         else:
             energies = self.filter[:,1]
+            # Lines added to make sure interpolate fills with zeros out of the range
+            aux = np.zeros(10)
+            energies = np.concatenate((aux,energies,aux))
             norm = np.trapz(energies,self.lamb_f())
             n_energies = energies/norm
             return n_energies
@@ -190,6 +200,4 @@ class Model:
         lambda2 = 1./np.trapz(filter_energy/(lambdas*lambdas))
         density_w = np.trapz(TxL,lambdas)
         density_f = lambda2*density_w/(3e17)
-        np.savetxt('filter.dat', filter_energy, delimiter= "\t")
-        np.savetxt('emission.dat', spectrum_model)
-        return density_w, density_f,
+        return density_w, density_f
