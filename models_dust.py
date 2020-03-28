@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import interpolate
 #https://stackoverflow.com/questions/3207219/how-do-i-list-all-files-of-a-directory
 from os import walk # --> dirpath, dirnames, filenames
 import matplotlib
@@ -74,6 +75,43 @@ class Data:
                 arr = self.arr_dat(key + '/' + val)
                 dic_arr[val] = arr
         return dic_arr
+# Filter handled from last graded pratical, slightly modified for this practical
+class Filter_handler():
+    def __init__(self,filter):
+        self.filter = np.loadtxt(filter)
+    def lamb_f(self):
+        #converting filter wavelength to nm
+        lambdas = self.filter[:,0] * 0.1
+        return lambdas
+    # phtons to energy and normalizing the integral of the filter.
+    def energy(self):
+        # Checking if the filter is defined in photons or energy
+        flag = False
+        f = open(filter,'r')
+        for line in f:
+            if '# photon' in line:
+                flag = True
+                break
+        if flag:
+            # Converting photons to energy
+            photons = self.filter[:,1]
+            energies = self.lamb_f() * photons
+            norm = np.trapz(energies,self.lamb_f())
+            n_energies = energies/norm
+            return n_energies
+        else:
+            energies = self.filter[:,1]
+            norm = np.trapz(energies,self.lamb_f())
+            n_energies = energies/norm
+            return n_energies
+    def interpolate(self,interval):
+        f = interpolate.interp1d(self.lamb_f(),self.energy(),fill_value='extrapolate')
+        return f(interval)
+
+def lamb_inter(arr_1,arr_2):
+    stack = np.concatenate((arr_1,arr_2))
+    # np.unique eliminates the duplicates and returns the array sorted :)
+    return np.unique(stack)
 
 # Class to create an emission spectrum
 class Model:
