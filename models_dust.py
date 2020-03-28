@@ -115,7 +115,7 @@ def lamb_inter(arr_1,arr_2):
 
 # Class to create an emission spectrum
 class Model:
-    def __init__(self, umin, umax, model,gamma,data, model_q_dic = model_q_dic):
+    def __init__(self, umin, umax, model,gamma,data,filter, model_q_dic = model_q_dic):
         self.umin = umin
         self.umax = umax
         self.model = model
@@ -129,13 +129,11 @@ class Model:
         # --> j_nu = (1-gamma)*j_nu[umin,umin] + gamma*j_nu[umin,umax]
         self.key_min_min = 'U' + umin + '_' + umin + '_' + model + '.txt'
         self.key_min_max = 'U' + umin + '_' + umax + '_' + model + '.txt'
-        self.data = data # this is the data loaded in memory by the last class
+        self.data = data # This is the data loaded in memory by the last Class
+        self.filter = filter # Filter data, cured in the last Class
     # Returning the raw data needed to compute the model
     def raw_model(self):
         return self.key_min_min, self.data.dic_arr()[self.key_min_min], self.key_min_max, self.data.dic_arr()[self.key_min_max]
-    # Returning wavelength in nm
-    def wavelength(self):
-        pass
     # Computing the model (first 4 parameters of the constructor)
     def spectrum(self):
         min_min, j_nu_min_min, min_max, j_nu_min_max = self.raw_model()
@@ -154,14 +152,10 @@ class Model:
             spectrum = j_nu * (0.001/1.66)*4*np.pi*3e7
             spectrum = spectrum/(lambdas*lambdas) # conversion factors for units in W/nm/(Kg of H)
             return lambdas,spectrum
-    def bolometric(self):
+    def interpolate(self,interval):
         lambdas,spectrum = self.spectrum()
-        # Checking if no Data
-        if len(lambdas)== 1:
-            print("Impossible to compute bolometric luminosity")
-            print("There is no spectral data for this model")
-            return None
-        return np.trapz(spectrum,lambdas)
+        f = interpolate.interp1d(lambdas,spectrum,fill_value='extrapolate')
+        return f(interval)
     def plot_spec(self):
         lambdas,spectrum = self.spectrum()
         if len(lambdas)== 1:
@@ -175,3 +169,25 @@ class Model:
         plt.ylabel('$L_{\lambda}$' +' [W/nm/(kg of H)]')
         plt.savefig(self.key_min_max[:-4]+'.pdf')
         plt.show()
+    def bolometric(self):
+        lambdas,spectrum = self.spectrum()
+        # Checking if no Data
+        if len(lambdas)== 1:
+            print("Impossible to compute bolometric luminosity")
+            print("There is no spectral data for this model")
+            return None
+        return np.trapz(spectrum,lambdas)
+    def L_density(self):
+        model_lambdas, spectrum = self.spectrum()
+        filter_lambdas          = self.filter.lamb_f()
+        lambdas                 = lamb_inter(filter_lambdas,model_lambdas)
+
+        filter_energy  = self.filter.interpolate(lambdas)
+        spectrum_model = self.interpolate(lambdas)
+        TxL = filter_energy * spectrum_model
+        lambda2 = 1./np.trapz(filter_energy/(lambdas*lambdas))
+
+        density_w = np.trapz(TxL,lambdas)
+        density_f = lambda2*density_w/(3e17)
+
+        return density_w, density_f
