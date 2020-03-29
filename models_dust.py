@@ -52,11 +52,10 @@ class Data:
                 val = line.split()
                 vals.append(val)
         f.close()
+        # if the file is empty, return 3 zeros as a np.array
         if i == 0:
             return np.zeros(3)
         data = np.array(vals)
-        #print(file)
-        #print(data)
         data = data.astype(float)
         return data
     def dic_files(self):
@@ -67,14 +66,16 @@ class Data:
         return all_txts
     def dic_arr(self):
         dic_arr = {}
-        # This method returns a dictioanry containing all the data, arranged
-        #similarly as in dic_files
+        # This method returns a dictionary containing all the data, where a key is 
+        # the name of a .txt file and the value is the array containing the relevant
+        # data from this file, relevant for the purposes of this project.
         all_txts = self.dic_files()
         for key,values in all_txts.items():
             for val in values:
                 arr = self.arr_dat(key + '/' + val)
                 dic_arr[val] = arr
         return dic_arr
+
 # Filter handled from last graded pratical, slightly modified for this practical
 class Filter_handler():
     def __init__(self,filter):
@@ -125,7 +126,7 @@ def lamb_inter(arr_1,arr_2):
     # np.unique eliminates the duplicates and returns the array sorted :)
     return np.unique(stack)
 
-# Class to create an emission spectrum
+# Class to create an emission spectrum for a given combination of umin, umax, model & gamma
 class Model:
     def __init__(self, umin, umax, model,gamma,data,filter, model_q_dic = model_q_dic):
         self.umin = umin
@@ -136,9 +137,6 @@ class Model:
             self.gamma = gamma
         else:
             print("gamma must be a number between 0 and 1")
-        #self.file = path + 'U' + umin + '/' + 'U' + umin + '_' + umax + '_' + model + '.txt'
-        # For doing computations with gamma
-        # --> j_nu = (1-gamma)*j_nu[umin,umin] + gamma*j_nu[umin,umax]
         self.key_min_min = 'U' + umin + '_' + umin + '_' + model + '.txt'
         self.key_min_max = 'U' + umin + '_' + umax + '_' + model + '.txt'
         self.data = data # This is the data loaded in memory by the last Class
@@ -174,6 +172,8 @@ class Model:
         f = interpolate.interp1d(lambdas,spectrum,fill_value='extrapolate')
         return f(interval)
     def plot_spec(self):
+        # it plots the computed spectrum from (1) in a semilog plot (for x), 
+        # it shows it and saves it in a PDF file as well.
         lambdas,spectrum = self.spectrum()
         if len(lambdas)== 1:
             print("Impossible to plot the spectrum")
@@ -187,6 +187,7 @@ class Model:
         plt.savefig(self.key_min_max[:-4]+'.pdf')
         plt.show()
     def bolometric(self):
+        # it returns the bolometric luminosity
         lambdas,spectrum = self.spectrum()
         # Checking if no Data
         if len(lambdas)== 1:
@@ -195,6 +196,7 @@ class Model:
             return None
         return np.trapz(spectrum,lambdas)
     def L_density(self):
+        # it returns the luminosity density in two formats, per wavelength and per frequency.
         model_lambdas, spectrum = self.spectrum()
         filter_lambdas          = self.filter.lamb_f()
         lambdas                 = lamb_inter(filter_lambdas,model_lambdas)
